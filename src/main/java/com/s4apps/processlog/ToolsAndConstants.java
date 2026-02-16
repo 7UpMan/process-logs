@@ -6,7 +6,22 @@ import java.security.NoSuchAlgorithmException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-public class Tools {
+public class ToolsAndConstants {
+    // Define the correct data format string
+    public static final String DATE_FORMAT_STRING = "yyyy-MM-dd HH:mm:ss";
+
+    // Reasons why a row should be ignored
+    public static final int REASON_UNKNOWN = 1;
+    public static final int REASON_IP = 2;
+    public static final int REASON_URL = 4;
+    public static final int REASON_SERVER = 8;
+    public static final int REASON_METHOD = 16;
+
+    // How often should we commit changes to the database?
+    public static final int COMMIT_FREQUENCY = 1000;
+
+    // How often to show a *    
+    public static final int PROGRESS_FREQUENCY = 5000;
     
     
     /**
@@ -29,7 +44,7 @@ public class Tools {
 
             return bytesToHex(encodedhash);
         } catch (NoSuchAlgorithmException ex) {
-            Logger.getLogger(Tools.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(ToolsAndConstants.class.getName()).log(Level.SEVERE, null, ex);
             return "SHA-256 not available";
         }
     }

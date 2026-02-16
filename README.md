@@ -74,11 +74,10 @@ db.password=change-me
 ```
 
 # IgnoreReason flags
-0 = No reason to ignore = good data
+There are several reasons why a given row could be ignored.  There are separate flags 
+for each.  There is also an ignoreReason flag which is a summary of the situation. A
+value of 0 means the record is goos (i.e. don't ignore).  A non-zero value indicates
+that the record should be ignored for some reason or another.
 
-The other fields are added together to form the reason:
-REASON_UNKNOWN = 1;
-REASON_IP = 2;
-REASON_URL = 4;
-REASON_SERVER = 8;
-REASON_METHOD = 16;
+The non-zero value is a created by "ORing" together values that represent each
+of the different issues.  The values of these issues are documented in the ToolsAndConstants.java file.

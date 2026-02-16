@@ -1,96 +1,78 @@
 package com.s4apps.processlog;
 
+import java.util.Collections;
 import java.util.List;
 
 /**
- *
+ * Immutable record that holds configuration for filtering and deleting log entries.
+ * 
+ * Using a record instead of a class gives us:
+ * - Automatic constructor
+ * - Automatic getters (ipsToIgnore(), not getIpsToIgnore())
+ * - Automatic equals(), hashCode(), toString()
+ * - Guaranteed immutability
+ * - Much less boilerplate code
+ * 
+ * Use ConfigRepository to load an instance of this record from the database.
+ * 
+ * Note: Requires Java 16+ for records
+ * 
  * @author mat
  */
-public class ConfigData {
-
-    // Somewhere to store the configuration data
-    private List<String> ipsToIgnore = null;
-    private List<String> methodsToIgnore = null;
-    private List<String> serversToIgnore = null;
-    private List<String> urlsToIgnore = null;
-    private List<String> ipsToDelete = null;
-    private List<String> methodsToDelete = null;
-    private List<String> serversToDelete = null;
-    private List<String> urlsToDelete = null;
-
-    public ConfigData() {
-
-        // All the config data is in the database so get a connection
-        JpaAccess jpa = new JpaAccess();
-
-        // Get the data that we want
-        ipsToIgnore = jpa.getIgnoreIps();
-        methodsToIgnore = jpa.getIgnoreMethods();
-        serversToIgnore = jpa.getIgnoreServers();
-        urlsToIgnore = jpa.getIgnoreUrls();
-        ipsToDelete = jpa.getDeleteIps();
-        methodsToDelete = jpa.getDeleteMethods();
-        serversToDelete = jpa.getDeleteServers();
-        urlsToDelete = jpa.getDeleteUrls();
-
-        // All done so close down
-        jpa.close();
-
-    }
+public record ConfigData(
+        List<String> ipsToIgnore,
+        List<String> methodsToIgnore,
+        List<String> serversToIgnore,
+        List<String> urlsToIgnore,
+        List<String> ipsToDelete,
+        List<String> methodsToDelete,
+        List<String> serversToDelete,
+        List<String> urlsToDelete) {
 
     /**
-     * @return the ipsToIgnore
+     * Canonical constructor that makes all lists immutable.
+     * This constructor is called automatically when you create a ConfigData.
      */
-    public List<String> getIpsToIgnore() {
-        return ipsToIgnore;
+    public ConfigData {
+        // Compact constructor - no need to assign fields, Java does it automatically
+        // Just validate and make immutable
+        ipsToIgnore = Collections.unmodifiableList(ipsToIgnore);
+        methodsToIgnore = Collections.unmodifiableList(methodsToIgnore);
+        serversToIgnore = Collections.unmodifiableList(serversToIgnore);
+        urlsToIgnore = Collections.unmodifiableList(urlsToIgnore);
+        ipsToDelete = Collections.unmodifiableList(ipsToDelete);
+        methodsToDelete = Collections.unmodifiableList(methodsToDelete);
+        serversToDelete = Collections.unmodifiableList(serversToDelete);
+        urlsToDelete = Collections.unmodifiableList(urlsToDelete);
     }
-
+    
     /**
-     * @return the methodsToIgnore
+     * Factory method for creating an empty configuration (useful for testing).
      */
-    public List<String> getMethodsToIgnore() {
-        return methodsToIgnore;
+    public static ConfigData empty() {
+        return new ConfigData(
+                Collections.emptyList(),
+                Collections.emptyList(),
+                Collections.emptyList(),
+                Collections.emptyList(),
+                Collections.emptyList(),
+                Collections.emptyList(),
+                Collections.emptyList(),
+                Collections.emptyList()
+        );
     }
-
+    
     /**
-     * @return the serversToIgnore
+     * Override the default toString() to provide a more concise summary.
+     * Records give us a default toString(), but we can customize it.
      */
-    public List<String> getServersToIgnore() {
-        return serversToIgnore;
-    }
-
-    /**
-     * @return the urlsToIgnore
-     */
-    public List<String> getUrlsToIgnore() {
-        return urlsToIgnore;
-    }
-
-    /**
-     * @return the ipsToDelete
-     */
-    public List<String> getIpsToDelete() {
-        return ipsToDelete;
-    }
-
-    /**
-     * @return the methodsToDelete
-     */
-    public List<String> getMethodsToDelete() {
-        return methodsToDelete;
-    }
-
-    /**
-     * @return the serversToDelete
-     */
-    public List<String> getServersToDelete() {
-        return serversToDelete;
-    }
-
-    /**
-     * @return the urlsToDelete
-     */
-    public List<String> getUrlsToDelete() {
-        return urlsToDelete;
+    @Override
+    public String toString() {
+        return String.format("ConfigData{ignore: %d IPs, %d methods, %d servers, %d URLs; " +
+                           "delete: %d IPs, %d methods, %d servers, %d URLs}",
+                ipsToIgnore.size(), methodsToIgnore.size(), 
+                serversToIgnore.size(), urlsToIgnore.size(),
+                ipsToDelete.size(), methodsToDelete.size(), 
+                serversToDelete.size(), urlsToDelete.size());
     }
 }

@@ -18,6 +18,8 @@ public class ProcessLog {
 
     static JpaAccess msa = null;
     static BufferedWriter outFile = null;
+    private static final Logger logger = Logger.getLogger(ProcessLog.class.getName());
+
 
     /**
      * @param args the command line arguments
@@ -29,8 +31,24 @@ public class ProcessLog {
         // Process the commanfd line options
         CliOptions clio = new CliOptions(args);
         
-        // Get the config data
-        ConfigData cd = new ConfigData();
+        // CHANGE: Use the ConfigRepository to load config data
+        ConfigRepository configRepo = new ConfigRepository();
+        ConfigData cd;
+        
+        try {
+            // Load configuration - can pass verbose flag from CLI options
+            cd = configRepo.load(clio.isVerbose());
+            
+            // Optional: Log the configuration summary
+            logger.info("Configuration loaded: " + cd.toString());
+            
+        } catch (ConfigRepository.ConfigurationException ex) {
+            // Handle configuration loading errors
+            System.err.println("FATAL: Unable to load configuration from database");
+            System.err.println("Error: " + ex.getMessage());
+            System.exit(1);
+            return; // Won't reach here, but keeps compiler happy
+        }
 
         // Get the destination opened up
         openOutput(clio);
@@ -77,7 +95,7 @@ public class ProcessLog {
                 outLineCounter += writeRow(rowStringStorage, clio);
 
                 // Display Progress
-                if (inLineCounter % 1000 == 0) {
+                if (inLineCounter % ToolsAndConstants.COMMIT_FREQUENCY == 0) {
                     System.out.print("*");
                 }
             }

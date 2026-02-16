@@ -330,7 +330,7 @@ public class JpaAccess {
         }
 
         try {
-            SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss");
+            SimpleDateFormat dateFormat = new SimpleDateFormat(ToolsAndConstants.DATE_FORMAT_STRING);
             Date parsedDate = dateFormat.parse(text);
             return parsedDate.toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime();
         } catch (Exception ex) {

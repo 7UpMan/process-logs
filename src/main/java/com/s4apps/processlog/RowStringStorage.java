@@ -20,13 +20,6 @@ import com.s4apps.processlog.model.ApacheLog;
  */
 public class RowStringStorage {
 
-    // Reasons why a row should be ignored
-    public static final int REASON_UNKNOWN = 1;
-    public static final int REASON_IP = 2;
-    public static final int REASON_URL = 4;
-    public static final int REASON_SERVER = 8;
-    public static final int REASON_METHOD = 16;
-
     // Positions in the array of the different items
     private static final int IDX_IP = 0;
     private static final int IDX_DATE = 3;
@@ -39,6 +32,8 @@ public class RowStringStorage {
     private static final int IDX_SERVER = 10;
     private static final int IDX_SERVER2 = 11;
     private static final int IDX_BROWSER = 12;
+
+    
 
     // Where to store the array. Use the IDX methods above to
     // get the different items out of the array.
@@ -70,7 +65,7 @@ public class RowStringStorage {
         existingId = rs.getString("id");
 
         rowColumns[IDX_IP] = rs.getString("ip");
-        rowColumns[IDX_DATE] = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss").format(rs.getTimestamp("date"));
+        rowColumns[IDX_DATE] = new SimpleDateFormat(ToolsAndConstants.DATE_FORMAT_STRING).format(rs.getTimestamp("date"));
         rowColumns[IDX_METHOD] = rs.getString("method");
         rowColumns[IDX_URL] = rs.getString("url");
         rowColumns[IDX_QUERY_STRING] = rs.getString("queryString");
@@ -106,7 +101,7 @@ public class RowStringStorage {
      * @return
      */
     public boolean ignoreIp() {
-        return cd.getIpsToIgnore().contains(getIp().toLowerCase());
+        return cd.ipsToIgnore().contains(getIp().toLowerCase());
     }
 
     /**
@@ -118,7 +113,7 @@ public class RowStringStorage {
      * @return
      */
     public boolean ignoreUrl() {
-        for (String findUrl : cd.getUrlsToIgnore()) {
+        for (String findUrl : cd.urlsToIgnore()) {
             if (getUrl().toLowerCase().startsWith(findUrl)) {
                 return true;
             }
@@ -135,7 +130,7 @@ public class RowStringStorage {
      * @return
      */
     public boolean ignoreServer() {
-        for (String findServer : cd.getServersToIgnore()) {
+        for (String findServer : cd.serversToIgnore()) {
             if (getServer().toLowerCase().startsWith(findServer)) {
                 return true;
             }
@@ -151,7 +146,7 @@ public class RowStringStorage {
      * @return
      */
     public boolean ignoreMethod() {
-        for (String findMethod : cd.getMethodsToIgnore()) {
+        for (String findMethod : cd.methodsToIgnore()) {
             if (getMethod().toLowerCase().compareToIgnoreCase(findMethod) == 0) {
                 return true;
             }
@@ -174,22 +169,22 @@ public class RowStringStorage {
 
         // Check the IPs that we want to skip
         if (ignoreIp()) {
-            ignoreReasons = ignoreReasons | REASON_IP;
+            ignoreReasons = ignoreReasons | ToolsAndConstants.REASON_IP;
         }
 
         // Check the beginning of the URL for ones to skip
         if (ignoreUrl()) {
-            ignoreReasons = ignoreReasons | REASON_URL;
+            ignoreReasons = ignoreReasons | ToolsAndConstants.REASON_URL;
         }
 
         // Skip the servers that we are not interested in
         if (ignoreServer()) {
-            ignoreReasons = ignoreReasons | REASON_SERVER;
+            ignoreReasons = ignoreReasons | ToolsAndConstants.REASON_SERVER;
         }
 
         // Skip the methods that we are not interested in
         if (ignoreMethod()) {
-            ignoreReasons = ignoreReasons | REASON_METHOD;
+            ignoreReasons = ignoreReasons | ToolsAndConstants.REASON_METHOD;
         }
 
         return (ignoreReasons);
@@ -213,39 +208,39 @@ public class RowStringStorage {
     }
 
     public String getMethod() {
-        return Tools.nullToEmpty(rowColumns[IDX_METHOD]);
+        return ToolsAndConstants.nullToEmpty(rowColumns[IDX_METHOD]);
     }
 
     public String getUrl() {
-        return Tools.nullToEmpty(rowColumns[IDX_URL]);
+        return ToolsAndConstants.nullToEmpty(rowColumns[IDX_URL]);
     }
 
     public String getQueryString() {
-        return Tools.nullToEmpty(rowColumns[IDX_QUERY_STRING]);
+        return ToolsAndConstants.nullToEmpty(rowColumns[IDX_QUERY_STRING]);
     }
 
     public String getHttpVer() {
-        return Tools.nullToEmpty(rowColumns[IDX_HTTP_VER]);
+        return ToolsAndConstants.nullToEmpty(rowColumns[IDX_HTTP_VER]);
     }
 
     public String getResponse() {
-        return Tools.nullToEmpty(rowColumns[IDX_RESPONSE]);
+        return ToolsAndConstants.nullToEmpty(rowColumns[IDX_RESPONSE]);
     }
 
     public String getSize() {
-        return Tools.nullToEmpty(rowColumns[IDX_SIZE]);
+        return ToolsAndConstants.nullToEmpty(rowColumns[IDX_SIZE]);
     }
 
     public String getServer() {
-        return Tools.nullToEmpty(rowColumns[IDX_SERVER]);
+        return ToolsAndConstants.nullToEmpty(rowColumns[IDX_SERVER]);
     }
 
     public String getServer2() {
-        return Tools.nullToEmpty(rowColumns[IDX_SERVER2].substring(0, Math.min(rowColumns[IDX_SERVER2].length(), 200)));
+        return ToolsAndConstants.nullToEmpty(rowColumns[IDX_SERVER2].substring(0, Math.min(rowColumns[IDX_SERVER2].length(), 200)));
     }
 
     public String getBrowser() {
-        return Tools.nullToEmpty(rowColumns[IDX_BROWSER]);
+        return ToolsAndConstants.nullToEmpty(rowColumns[IDX_BROWSER]);
     }
 
     /**
@@ -258,26 +253,26 @@ public class RowStringStorage {
      */
     public boolean isDeleteRow() {
         // Check IPs - needs to match exactly.
-        if (cd.getIpsToDelete().contains(getIp().toLowerCase())) {
+        if (cd.ipsToDelete().contains(getIp().toLowerCase())) {
             return true;
         }
 
         // Check URLs, needs to match the beginning of the URL
-        for (String findUrl : cd.getUrlsToDelete()) {
+        for (String findUrl : cd.urlsToDelete()) {
             if (getUrl().toLowerCase().startsWith(findUrl)) {
                 return true;
             }
         }
 
         // Check servers, needs to match the beginning of the server
-        for (String findServer : cd.getServersToDelete()) {
+        for (String findServer : cd.serversToDelete()) {
             if (getServer().toLowerCase().startsWith(findServer)) {
                 return true;
             }
         }
 
         // Check the methods - needs to match exactly
-        if (cd.getMethodsToDelete().contains(getMethod().toUpperCase())) {
+        if (cd.methodsToDelete().contains(getMethod().toUpperCase())) {
             return true;
         }
 
@@ -289,7 +284,7 @@ public class RowStringStorage {
         if (dateTime == null) {
             return null;
         }
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd hh:mm:ss");
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern(ToolsAndConstants.DATE_FORMAT_STRING);
         return dateTime.format(formatter);
     }
 
@@ -317,7 +312,7 @@ public class RowStringStorage {
         // Add in everything within the array
         for (String rowColumn : rowColumns) {
             sb.append(",\"");
-            sb.append(Tools.escapeCSV(rowColumn));
+            sb.append(ToolsAndConstants.escapeCSV(rowColumn));
             sb.append('"');
         }
 
@@ -347,7 +342,7 @@ public class RowStringStorage {
             }
 
             // Return the hash
-            return Tools.hash(sb.toString());
+            return ToolsAndConstants.hash(sb.toString());
 
         } else {
             return existingId;

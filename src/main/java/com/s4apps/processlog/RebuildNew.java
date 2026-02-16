@@ -10,6 +10,7 @@ import java.util.logging.Logger;
  * @author mat
  */
 public class RebuildNew {
+    private static final Logger logger = Logger.getLogger(RebuildNew.class.getName());
 
     /**
      * @param args the command line arguments
@@ -22,13 +23,29 @@ public class RebuildNew {
         // Store now for later so we can work out how long it took
         LocalDateTime startDateTime = LocalDateTime.now();
 
-        // Get the ConfigData
-        ConfigData cd = new ConfigData();
+        // CHANGE: Use the ConfigRepository to load config data
+        ConfigRepository configRepo = new ConfigRepository();
+        ConfigData cd;
+        
+        try {
+            // Load configuration - can pass verbose flag from CLI options
+            cd = configRepo.load();
+            
+            // Optional: Log the configuration summary
+            logger.info("Configuration loaded: " + cd.toString());
+            
+        } catch (ConfigRepository.ConfigurationException ex) {
+            // Handle configuration loading errors
+            System.err.println("FATAL: Unable to load configuration from database");
+            System.err.println("Error: " + ex.getMessage());
+            System.exit(1);
+            return; // Won't reach here, but keeps compiler happy
+        }
 
         try {
             processRows(msa, cd);
         } catch (RuntimeException ex) {
-            Logger.getLogger(RebuildNew.class.getName()).log(Level.SEVERE, null, ex);
+            logger.log(Level.SEVERE, "Error processing rows", ex);
         }
 
         Duration duration = Duration.between(startDateTime, LocalDateTime.now());
@@ -52,11 +69,11 @@ public class RebuildNew {
             rowCounter++;
 
             // Commit every 1,000 rows
-            if (rowCounter % 1000 == 0) {
+            if (rowCounter % ToolsAndConstants.COMMIT_FREQUENCY == 0) {
                 msa.commit();
                 System.out.print("*");
                 System.out.flush();
-                if (rowCounter % 50000 == 0) {
+                if (rowCounter % (ToolsAndConstants.PROGRESS_FREQUENCY)  == 0) {
                     System.out.print("\n");
                 }
             }
