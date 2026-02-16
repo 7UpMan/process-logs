@@ -21,7 +21,8 @@ public class ToolsAndConstants {
     public static final int COMMIT_FREQUENCY = 1000;
 
     // How often to show a *    
-    public static final int PROGRESS_FREQUENCY = 5000;
+    public static final int PROGRESS_FREQUENCY = 1000;
+    public static final int PROGRESS_FREQUENCY_SLOW = 50000;
     
     
     /**

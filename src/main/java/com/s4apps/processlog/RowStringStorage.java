@@ -236,7 +236,11 @@ public class RowStringStorage {
     }
 
     public String getServer2() {
-        return ToolsAndConstants.nullToEmpty(rowColumns[IDX_SERVER2].substring(0, Math.min(rowColumns[IDX_SERVER2].length(), 200)));
+        String server2 = ToolsAndConstants.nullToEmpty(rowColumns[IDX_SERVER2]);
+        if (server2.length() > 200) {
+            return server2.substring(0, 200);
+        }
+        return server2;
     }
 
     public String getBrowser() {

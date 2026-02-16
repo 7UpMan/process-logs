@@ -73,7 +73,7 @@ public class RebuildNew {
                 msa.commit();
                 System.out.print("*");
                 System.out.flush();
-                if (rowCounter % (ToolsAndConstants.PROGRESS_FREQUENCY)  == 0) {
+                if (rowCounter % (ToolsAndConstants.PROGRESS_FREQUENCY_SLOW)  == 0) {
                     System.out.print("\n");
                 }
             }
