@@ -7,6 +7,10 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 public class ToolsAndConstants {
+
+    // Utility class — not meant to be instantiated
+    private ToolsAndConstants() {}
+
     // Define the correct data format string
     public static final String DATE_FORMAT_STRING = "yyyy-MM-dd HH:mm:ss";
 

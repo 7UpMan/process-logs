@@ -30,18 +30,19 @@ public class ConfigRepository {
         try {
             jpa = new JpaAccess();
             
-            // Load all the ignore rules
+            // Load all the ignore rules. Methods are normalised to uppercase so
+            // comparisons in RowStringStorage can use a simple equals() check.
             List<String> ipsToIgnore = jpa.getIgnoreIps();
-            List<String> methodsToIgnore = jpa.getIgnoreMethods();
+            List<String> methodsToIgnore = jpa.getIgnoreMethods().stream().map(String::toUpperCase).toList();
             List<String> serversToIgnore = jpa.getIgnoreServers();
             List<String> urlsToIgnore = jpa.getIgnoreUrls();
-            
-            // Load all the delete rules
+
+            // Load all the delete rules. Methods are normalised to uppercase here too.
             List<String> ipsToDelete = jpa.getDeleteIps();
-            List<String> methodsToDelete = jpa.getDeleteMethods();
+            List<String> methodsToDelete = jpa.getDeleteMethods().stream().map(String::toUpperCase).toList();
             List<String> serversToDelete = jpa.getDeleteServers();
             List<String> urlsToDelete = jpa.getDeleteUrls();
-            
+
             logger.info(String.format("Configuration loaded successfully: %d ignore rules, %d delete rules",
                     ipsToIgnore.size() + methodsToIgnore.size() + serversToIgnore.size() + urlsToIgnore.size(),
                     ipsToDelete.size() + methodsToDelete.size() + serversToDelete.size() + urlsToDelete.size()));
@@ -96,7 +97,7 @@ public class ConfigRepository {
                 logger.info("Loaded " + ipsToIgnore.size() + " IPs to ignore: " + ipsToIgnore);
             }
             
-            List<String> methodsToIgnore = jpa.getIgnoreMethods();
+            List<String> methodsToIgnore = jpa.getIgnoreMethods().stream().map(String::toUpperCase).toList();
             if (verbose) {
                 logger.info("Loaded " + methodsToIgnore.size() + " methods to ignore: " + methodsToIgnore);
             }
@@ -117,7 +118,7 @@ public class ConfigRepository {
                 logger.info("Loaded " + ipsToDelete.size() + " IPs to delete: " + ipsToDelete);
             }
             
-            List<String> methodsToDelete = jpa.getDeleteMethods();
+            List<String> methodsToDelete = jpa.getDeleteMethods().stream().map(String::toUpperCase).toList();
             if (verbose) {
                 logger.info("Loaded " + methodsToDelete.size() + " methods to delete: " + methodsToDelete);
             }

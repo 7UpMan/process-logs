@@ -140,14 +140,16 @@ public class RowStringStorage {
 
     /**
      * Should this row be ignored because of issues with the Method. We look for an
-     * exact match in the list of Methods to ignore, so if the Method is in the
-     * list, it will be ignored.
+     * exact match in the list of Methods to ignore. Methods are stored in uppercase
+     * in the configuration (normalised at load time), and the incoming method is
+     * also uppercased before comparison, so the check is always case-insensitive in
+     * practice.
      *
      * @return
      */
     public boolean ignoreMethod() {
         for (String findMethod : cd.methodsToIgnore()) {
-            if (getMethod().toLowerCase().compareToIgnoreCase(findMethod) == 0) {
+            if (getMethod().toUpperCase().equals(findMethod)) {
                 return true;
             }
         }
@@ -275,7 +277,7 @@ public class RowStringStorage {
             }
         }
 
-        // Check the methods - needs to match exactly
+        // Check the methods - uppercase on both sides for a consistent exact match
         if (cd.methodsToDelete().contains(getMethod().toUpperCase())) {
             return true;
         }
