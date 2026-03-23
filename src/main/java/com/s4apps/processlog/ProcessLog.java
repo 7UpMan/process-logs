@@ -7,6 +7,10 @@ import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
+import java.time.OffsetDateTime;
+import java.time.ZoneOffset;
+import java.time.format.DateTimeFormatter;
+import java.util.Locale;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -233,7 +237,9 @@ public class ProcessLog {
     
     /**
      * Parse one line from the log file.
-     * Same implementation as before, but now an instance method.
+     * 
+     * Sample input line:
+     * 82.165.86.0 - - [22/Mar/2026:01:57:33 +0100] "POST /wp-cron.php?doing_wp_cron=1774141053.2702050209045410156250 HTTP/1.1" 200 - 7upman.com "-" "WordPress/6.9.4; http://7upman.com" "-"
      */
     private void process1Line(RowStringStorage rowStringStorage, String line) {
         boolean inBracket = false;
@@ -272,25 +278,15 @@ public class ProcessLog {
     
     /**
      * Process one field from the log line.
-     * Same implementation as before, but now an instance method.
      */
     private void process1Field(RowStringStorage rowStringStorage, String param, int fieldNumber) {
-        // Field 4 is a date
+        // Field 4 is a date with timezone offset - convert to UTC
+        // Data sample: "22/Mar/2026:01:57:33 +0100"
         if (fieldNumber == 4) {
-            String[] monthNames = {"jan", "feb", "mar", "apr", "may", "jun", 
-                                  "jul", "aug", "sep", "oct", "nov", "dec"};
-            String dom = param.substring(0, 2);
-            String monName = param.substring(3, 6);
-            String year = param.substring(7, 11);
-            String time = param.substring(12, 20);
-            String monNumber = "00";
-            for (int i = 0; i < monthNames.length; i++) {
-                if (monName.equalsIgnoreCase(monthNames[i])) {
-                    monNumber = ((100 + i + 1) + "").substring(1);
-                    break;
-                }
-            }
-            param = year + "-" + monNumber + "-" + dom + " " + time;
+            DateTimeFormatter inputFormatter = DateTimeFormatter.ofPattern("dd/MMM/yyyy:HH:mm:ss Z", Locale.ENGLISH);
+            DateTimeFormatter outputFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+            OffsetDateTime odt = OffsetDateTime.parse(param, inputFormatter);
+            param = odt.withOffsetSameInstant(ZoneOffset.UTC).format(outputFormatter);
         }
         
         // Field 5 is the URL which we want in 4 parts

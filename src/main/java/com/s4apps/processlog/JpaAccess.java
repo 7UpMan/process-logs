@@ -288,17 +288,17 @@ public class JpaAccess {
     }
 
     private void toApacheLog(RowStringStorage rowStringStorage, ApacheLog entity) {
-        entity.setId(rowStringStorage.getId());
-        entity.setIp(blankToNull(rowStringStorage.getIp()));
+        entity.setId(truncate(rowStringStorage.getId(), 64));
+        entity.setIp(truncate(blankToNull(rowStringStorage.getIp()), 32));
         entity.setDate(parseDateTime(rowStringStorage.getDate()));
-        entity.setMethod(blankToNull(rowStringStorage.getMethod()));
-        entity.setUrl(blankToNull(rowStringStorage.getUrl()));
-        entity.setQueryString(blankToNull(rowStringStorage.getQueryString()));
+        entity.setMethod(truncate(blankToNull(rowStringStorage.getMethod()), 10));
+        entity.setUrl(truncate(blankToNull(rowStringStorage.getUrl()), 500));
+        entity.setQueryString(truncate(blankToNull(rowStringStorage.getQueryString()), 500));
         entity.setResponse(parseInteger(rowStringStorage.getResponse()));
         entity.setSize(parseInteger(rowStringStorage.getSize()));
-        entity.setServer(blankToNull(rowStringStorage.getServer()));
-        entity.setServer2(blankToNull(rowStringStorage.getServer2()));
-        entity.setBrowser(blankToNull(rowStringStorage.getBrowser()));
+        entity.setServer(truncate(blankToNull(rowStringStorage.getServer()), 200));
+        entity.setServer2(truncate(blankToNull(rowStringStorage.getServer2()), 300));
+        entity.setBrowser(truncate(blankToNull(rowStringStorage.getBrowser()), 500));
         applyFlags(rowStringStorage, entity);
     }
 
@@ -308,6 +308,10 @@ public class JpaAccess {
         entity.setIgnoreUrl(rowStringStorage.ignoreUrl());
         entity.setIgnoreServer(rowStringStorage.ignoreServer());
         entity.setIgnoreMethod(rowStringStorage.ignoreMethod());
+    }
+
+    private String truncate(String value, int maxLength) {
+        return (value != null && value.length() > maxLength) ? value.substring(0, maxLength) : value;
     }
 
     private String blankToNull(String value) {

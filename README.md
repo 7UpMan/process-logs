@@ -59,6 +59,7 @@ Run a main class (example):
 - **Apache Commons CLI 1.11.0** - Command line argument parsing
 - **Apache Commons Lang3 3.20.0** - Utility functions
 - **MySQL Connector/J 9.6.0** - MySQL database connectivity
+- **SLF4J Simple 2.0.13** - Logging implementation for SLF4J
 
 ## Database Secrets
 

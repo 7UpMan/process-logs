@@ -28,10 +28,10 @@ public class ApacheLog {
     @Column(name = "method", length = 10)
     private String method;
 
-    @Column(name = "url", length = 200)
+    @Column(name = "url", length = 500)
     private String url;
 
-    @Column(name = "queryString", length = 1000)
+    @Column(name = "queryString", length = 500)
     private String queryString;
 
     @Column(name = "response")
@@ -46,7 +46,7 @@ public class ApacheLog {
     @Column(name = "server2", length = 300)
     private String server2;
 
-    @Column(name = "browser", length = 1000)
+    @Column(name = "browser", length = 500)
     private String browser;
 
     @Column(name = "ignoreReason")
