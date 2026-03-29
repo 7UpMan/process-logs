@@ -74,6 +74,15 @@ db.user=processlog
 db.password=change-me
 ```
 
+# Module overview
+
+## get-logs.sh
+This is a shell script file that should be symbolically linked into the $HOME/bin directory.  This is
+the command line tool wrapper to run the tools in their most common form.
+
+use:
+`get-logs.sh --help` for help
+
 # IgnoreReason flags
 There are several reasons why a given row could be ignored.  There are separate flags 
 for each.  There is also an ignoreReason flag which is a summary of the situation. A
