@@ -16,6 +16,7 @@ LOAD_CRM=0
 QUIET=0
 LOG=0
 _VERBOSE_EXPLICIT=0
+VERSION=0
 
 # Places to store and find things
 DOWNLOADED_LOGS=/home/mat/server-logs
@@ -90,6 +91,7 @@ while [ "$#" -gt 0 ]; do
 			echo "  --check - check the sanity of the databse  (calls processlog.Check)."
 			echo "  --delete-old - delete rolws older than 180 days old  (calls processlog.DeleteOld)."
 			echo "  --load-crm - load the CRM data into ESPO."
+			echo "  --version - print the version of the JAR and exit."
 			echo "  --verbose - write output to screen (default, mutually exclusive with --quiet)."
 			echo "  --quiet - suppress all output (mutually exclusive with --verbose)."
 			echo "  --log - append output to log file (independent of --quiet/--verbose)."
@@ -120,6 +122,9 @@ while [ "$#" -gt 0 ]; do
 		--load-crm)
 			LOAD_CRM=1
 			;;
+		--version)
+			VERSION=1
+			;;
 		--verbose)
 			_VERBOSE_EXPLICIT=1
 			;;
@@ -140,6 +145,28 @@ done
 
 if [ ${QUIET} -eq "1" ] && [ ${_VERBOSE_EXPLICIT} -eq "1" ]; then
 	log_err "Error: --quiet and --verbose are mutually exclusive"
+	exit 1
+fi
+
+if [ ${VERSION} -eq "1" ]; then
+	JAR=$(ls -t "$PROJECT_DIR"/target/*.jar 2>/dev/null | grep -vE -- '-(sources|javadoc|original|tests)\.jar$' | head -n 1 || true)
+	if [ -z "$JAR" ]; then
+		log_err "JAR not found. Build with: ( cd $PROJECT_DIR && mvn -q -DskipTests package )"
+		exit 1
+	fi
+	echo "JAR: $JAR"
+	java -cp "$JAR" ${CLASS_ROOT}.Version
+	exit 0
+fi
+
+# Ensure the JAR is built and up to date before doing any work
+JAR=$(ls -t "$PROJECT_DIR"/target/*.jar 2>/dev/null | grep -vE -- '-(sources|javadoc|original|tests)\.jar$' | head -n 1 || true)
+if [ -z "$JAR" ]; then
+	log_err "JAR not found. Build with: ( cd $PROJECT_DIR && mvn -q -DskipTests package )"
+	exit 1
+fi
+if find "$PROJECT_DIR/src/main" "$PROJECT_DIR/pom.xml" -type f -newer "$JAR" | grep -q .; then
+	log_err "JAR is out of date. Build with: ( cd $PROJECT_DIR && mvn -q -DskipTests package )"
 	exit 1
 fi
 

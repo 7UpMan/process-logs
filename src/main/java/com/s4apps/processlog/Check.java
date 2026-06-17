@@ -69,6 +69,7 @@ public class Check {
         printMatchCheck("URLs", jpaAccess.countIgnoreUrlMatches(), jpaAccess.countIgnoreUrlFlagged());
         printMatchCheck("Servers", jpaAccess.countIgnoreServerMatches(), jpaAccess.countIgnoreServerFlagged());
         printMatchCheck("Methods", jpaAccess.countIgnoreMethodMatches(), jpaAccess.countIgnoreMethodFlagged());
+        System.out.println("- Bot records flagged: " + jpaAccess.countIgnoreBotFlagged());
 
         System.out.print("Checking ignoreReason adds up ... ");
         long mismatch = jpaAccess.countIgnoreReasonMismatch();

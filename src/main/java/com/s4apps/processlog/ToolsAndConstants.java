@@ -20,6 +20,7 @@ public class ToolsAndConstants {
     public static final int REASON_URL = 4;
     public static final int REASON_SERVER = 8;
     public static final int REASON_METHOD = 16;
+    public static final int REASON_BOT = 32;
 
     // How often should we commit changes to the database?
     public static final int COMMIT_FREQUENCY = 1000;

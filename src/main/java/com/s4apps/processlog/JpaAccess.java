@@ -241,6 +241,13 @@ public class JpaAccess {
                 .getSingleResult();
     }
 
+    public long countIgnoreBotFlagged() {
+        return em.createQuery(
+                "SELECT COUNT(al) FROM ApacheLog al WHERE al.ignoreBot = true",
+                Long.class)
+                .getSingleResult();
+    }
+
     public long countIgnoreReasonMismatch() {
         return em.createQuery(
                 "SELECT COUNT(al) FROM ApacheLog al WHERE "
@@ -248,6 +255,7 @@ public class JpaAccess {
                 + "+ (CASE WHEN al.ignoreUrl = true THEN 4 ELSE 0 END) "
                 + "+ (CASE WHEN al.ignoreServer = true THEN 8 ELSE 0 END) "
                 + "+ (CASE WHEN al.ignoreMethod = true THEN 16 ELSE 0 END) "
+                + "+ (CASE WHEN al.ignoreBot = true THEN 32 ELSE 0 END) "
                 + "<> al.ignoreReason",
                 Long.class)
                 .getSingleResult();
@@ -308,6 +316,7 @@ public class JpaAccess {
         entity.setIgnoreUrl(rowStringStorage.ignoreUrl());
         entity.setIgnoreServer(rowStringStorage.ignoreServer());
         entity.setIgnoreMethod(rowStringStorage.ignoreMethod());
+        entity.setIgnoreBot(rowStringStorage.ignoreBot());
     }
 
     private String truncate(String value, int maxLength) {

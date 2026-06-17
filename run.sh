@@ -37,6 +37,7 @@ fi
 
 if find "$project_root/src/main" "$project_root/pom.xml" -type f -newer "$fat_jar" | grep -q .; then
   warn_build "Fat jar appears out of date: $fat_jar"
+  exit 1
 fi
 
 java -cp "$fat_jar" "$main_class" "$@"

@@ -139,6 +139,17 @@ public class RowStringStorage {
     }
 
     /**
+     * Should this row be ignored because it looks like a bot based on the user
+     * agent string. Checks for common bot keywords: "bot", "crawler", "spider".
+     *
+     * @return
+     */
+    public boolean ignoreBot() {
+        String browser = getBrowser().toLowerCase();
+        return browser.contains("bot") || browser.contains("crawler") || browser.contains("spider");
+    }
+
+    /**
      * Should this row be ignored because of issues with the Method. We look for an
      * exact match in the list of Methods to ignore. Methods are stored in uppercase
      * in the configuration (normalised at load time), and the incoming method is
@@ -187,6 +198,11 @@ public class RowStringStorage {
         // Skip the methods that we are not interested in
         if (ignoreMethod()) {
             ignoreReasons = ignoreReasons | ToolsAndConstants.REASON_METHOD;
+        }
+
+        // Skip bots based on user agent
+        if (ignoreBot()) {
+            ignoreReasons = ignoreReasons | ToolsAndConstants.REASON_BOT;
         }
 
         return (ignoreReasons);

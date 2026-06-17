@@ -64,6 +64,9 @@ public class ApacheLog {
     @Column(name = "ignoreMethod", nullable = false, columnDefinition = "TINYINT(1)")
     private boolean ignoreMethod;
 
+    @Column(name = "ignoreBot", nullable = false, columnDefinition = "TINYINT(1)")
+    private boolean ignoreBot;
+
     // Getters and setters
     public String getId() {
         return id;
@@ -193,6 +196,14 @@ public class ApacheLog {
         this.ignoreMethod = ignoreMethod;
     }
 
+    public boolean isIgnoreBot() {
+        return ignoreBot;
+    }
+
+    public void setIgnoreBot(boolean ignoreBot) {
+        this.ignoreBot = ignoreBot;
+    }
+
     @Override
     public String toString() {
         return "ApacheLog{" +
@@ -212,6 +223,7 @@ public class ApacheLog {
                 ", ignoreServer=" + ignoreServer +
                 ", ignoreIp=" + ignoreIp +
                 ", ignoreMethod=" + ignoreMethod +
+                ", ignoreBot=" + ignoreBot +
                 '}';
     }
 }
