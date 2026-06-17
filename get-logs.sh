@@ -14,21 +14,45 @@ CHECK=0
 DELETE_OLD=0
 LOAD_CRM=0
 QUIET=0
+LOG=0
+_VERBOSE_EXPLICIT=0
 
 # Places to store and find things
-LOG_DIR=/home/mat/server-logs
+DOWNLOADED_LOGS=/home/mat/server-logs
 
+LOGFILE=/home/mat/logs/$(date +"%Y-%m-%d")-get-logs.log
 PROJECT_DIR=/home/mat/Projects/process-logs
 RUN_CMD=$PROJECT_DIR/run.sh
 LEAD_MANAGER_DIR=/home/mat/Projects/lead-manager
 LEAD_MANAGER_RUN_CMD=$LEAD_MANAGER_DIR/run.sh
 CLASS_ROOT=com.s4apps.processlog
 
+log_msg() {
+	if [ ${QUIET} -eq "1" ] && [ ${LOG} -eq "0" ]; then
+		return
+	elif [ ${QUIET} -eq "1" ]; then
+		echo "$*" >> "$LOGFILE"
+	elif [ ${LOG} -eq "1" ]; then
+		echo "$*" | tee -a "$LOGFILE"
+	else
+		echo "$*"
+	fi
+}
+
+log_err() {
+	echo "$*" >&2
+	[ ${LOG} -eq "1" ] && echo "$*" >> "$LOGFILE"
+}
+
 run() {
 	# Allows us to run a command and optionally suppress the output
 	set +e
-	if [ ${QUIET} -eq "1" ]; then
+	if [ ${QUIET} -eq "1" ] && [ ${LOG} -eq "0" ]; then
 		"$@" >/dev/null 2>&1
+	elif [ ${QUIET} -eq "1" ]; then
+		"$@" >> "$LOGFILE" 2>&1
+	elif [ ${LOG} -eq "1" ]; then
+		"$@" 2>&1 | tee -a "$LOGFILE"
 	else
 		"$@"
 	fi
@@ -36,7 +60,7 @@ run() {
 	set -e
 	# Check the return code and exit if there was an error
 	if [ $EXIT_CODE -ne 0 ]; then
-		echo "Error running command: $*"
+		log_err "Error running command: $*"
 		exit 1
 	fi
 }
@@ -45,7 +69,7 @@ run() {
 
 # If no parameters then set the default
 if [ "$#" -eq 0 ]; then
-	echo "Using default options --download --import --delete-old"
+	log_msg "Using default options --download --import --delete-old"
 	DOWNLOAD=1
 	IMPORT=1
 	DELETE_OLD=1
@@ -66,7 +90,9 @@ while [ "$#" -gt 0 ]; do
 			echo "  --check - check the sanity of the databse  (calls processlog.Check)."
 			echo "  --delete-old - delete rolws older than 180 days old  (calls processlog.DeleteOld)."
 			echo "  --load-crm - load the CRM data into ESPO."
-			echo "  --quiet - suppress output"
+			echo "  --verbose - write output to screen (default, mutually exclusive with --quiet)."
+			echo "  --quiet - suppress all output (mutually exclusive with --verbose)."
+			echo "  --log - append output to log file (independent of --quiet/--verbose)."
 			echo "  --help | -?"
 			echo -e "\nNotes:"
 			echo "1. If you change the ignore or delete data then all new data will be correct but"
@@ -94,77 +120,88 @@ while [ "$#" -gt 0 ]; do
 		--load-crm)
 			LOAD_CRM=1
 			;;
+		--verbose)
+			_VERBOSE_EXPLICIT=1
+			;;
 		--quiet)
 			QUIET=1
 			;;
+		--log)
+			LOG=1
+			;;
 		*)
-			echo "Invalid option $1"
-			echo "Try '$0 --help' for more information"
+			log_err "Invalid option $1"
+			log_err "Try '$0 --help' for more information"
 			exit 1
 			;;
 	esac
 	shift
 done
 
-#### Get the logs
-if [ ! -d "$LOG_DIR" ]; then
-	echo "Missing log dir of $LOG_DIR"
+if [ ${QUIET} -eq "1" ] && [ ${_VERBOSE_EXPLICIT} -eq "1" ]; then
+	log_err "Error: --quiet and --verbose are mutually exclusive"
 	exit 1
 fi
 
-cd ${LOG_DIR}
+#### Get the logs
+if [ ! -d "$DOWNLOADED_LOGS" ]; then
+	log_err "Missing log dir of $DOWNLOADED_LOGS"
+	exit 1
+fi
+
+cd ${DOWNLOADED_LOGS}
 
 if [ ${DOWNLOAD} -eq "1" ]; then
 	# We need to download the data so ...
-	[ ${QUIET} -eq "0" ] && echo "************************"
-	[ ${QUIET} -eq "0" ] && echo "Downloading files"
+	log_msg "************************"
+	log_msg "Downloading files"
 
 	# Clear the old files
 	( rm -fr * >/dev/null )
-	[ ${QUIET} -eq "0" ] && echo "Directory cleared"
+	log_msg "Directory cleared"
 
 	# Get the files
-	[ ${QUIET} -eq "0" ] && echo "Getting new log files"
+	log_msg "Getting new log files"
 	scp u52081587@home273147721.1and1-data.host:logs/access* . > /dev/null 2>&1
-	[ ${QUIET} -eq "0" ] && echo "Files downloaded"
+	log_msg "Files downloaded"
 
 	# Un-compress them
-	[ ${QUIET} -eq "0" ] && echo "Uncompressing files"
+	log_msg "Uncompressing files"
 	gunzip *gz
-	[ ${QUIET} -eq "0" ] && echo "Files uncompressed"
+	log_msg "Files uncompressed"
 fi
 
 ### Process all of the matching files
 if [ ${IMPORT} -eq "1" ]; then
-	[ ${QUIET} -eq "0" ] && echo "************************"
-	[ ${QUIET} -eq "0" ] && echo "Importing files"
+	log_msg "************************"
+	log_msg "Importing files"
 	run ${RUN_CMD} ${CLASS_ROOT}.ProcessLog -v --database *
 fi
 
 ### Rebuild the ignore flags the new way
 if [ ${REBUILD} -eq "1" ]; then
-	[ ${QUIET} -eq "0" ] && echo "************************"
-	[ ${QUIET} -eq "0" ] && echo "Rebuilding ignore flags"
+	log_msg "************************"
+	log_msg "Rebuilding ignore flags"
 	run ${RUN_CMD} ${CLASS_ROOT}.Rebuild
 fi
 
 ### Check the database sanity
 if [ ${CHECK} -eq "1" ]; then
-	[ ${QUIET} -eq "0" ] && echo "************************"
-	[ ${QUIET} -eq "0" ] && echo "Checking database sanity"
+	log_msg "************************"
+	log_msg "Checking database sanity"
 	run ${RUN_CMD} ${CLASS_ROOT}.Check
 fi
 
 ### Delete old rows
 if [ ${DELETE_OLD} -eq "1" ]; then
-	[ ${QUIET} -eq "0" ] && echo "************************"
-	[ ${QUIET} -eq "0" ] && echo "Deleting old rows"
+	log_msg "************************"
+	log_msg "Deleting old rows"
 	run ${RUN_CMD} ${CLASS_ROOT}.DeleteOld
 fi
 
 ### Load the CRM data into ESPO
 if [ ${LOAD_CRM} -eq "1" ]; then
-	[ ${QUIET} -eq "0" ] && echo "************************"
-	[ ${QUIET} -eq "0" ] && echo "Loading CRM data into ESPO"
-	${LEAD_MANAGER_RUN_CMD} --info --start $( date -d "1 week ago" +"%Y-%m-%d" ) >> ~mat/tmp/load-crm.log 2>&1
+	log_msg "************************"
+	log_msg "Loading CRM data into ESPO"
+	run ${LEAD_MANAGER_RUN_CMD} --info --start $( date -d "1 week ago" +"%Y-%m-%d" )
 fi
